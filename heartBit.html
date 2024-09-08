@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="setting.js"></script>
+    <script src="Cookie.js"></script> 
+    <script src="HTTP2024.js"></script>
+    <title>Heart Rate Observation</title>
+    <style type="text/css">
+        textarea{padding:13px;width:95%;min-height:200px;font-size:17px;}
+    </style>
+    <script>
+        function updateObservation() {
+            // 取得輸入值
+            var refPid = "Patient/" + document.getElementById("patientId").value;
+            var beatsPerMin = document.getElementById("heartRate").value;
+            var theDate = document.getElementById("date").value;
+
+            // 建立 JSON 物件
+            var observation = {
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [{
+                    "coding": [{
+                        "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                        "code": "activity"
+                    }]
+                },
+                {
+                    "coding": [{
+                        "system": "http://hl7.org/fhir/us/physical-activity/CodeSystem/pa-temporary-codes",
+                        "code": "PhysicalActivity"
+                    }]
+                }],
+                "code": {
+                    "coding": [{
+                        "system": "http://loinc.org",
+                        "code": "40443-4",
+                        "display": "Heart rate --resting"
+                    }]
+                },
+                "subject": {
+                    "reference": refPid
+                },
+                "effectiveDateTime": theDate,
+                "valueQuantity": {
+                    "value": beatsPerMin,
+                    "unit": "beats per minute",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "/min"
+                }
+            };
+
+            // 顯示結果
+           // document.getElementById("result").innerHTML = "<pre>" + JSON.stringify(observation, null, 2) + "</pre>";
+          var jsonStr = JSON.stringify(observation);
+    // alert(jsonStr);
+       var apiURL;
+       apiURL = FHIRrootURL  + "Observation";
+       sendHttpPost( apiURL, jsonStr, callBack);
+       }
+       // document.getElementById("result").innerHTML = "<pre>" + JSON.stringify(observation, null, 2) + "</pre>";
+        function callBack(ret)
+         {  document.getElementById("TextArea1").value = ret;
+           // document.getElementById("result").innerHTML = "<pre>" + JSON.stringify(ret, null, 2) + "</pre>";
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Heart Rate Observation</h1>
+
+    <label for="patientId">Patient ID:</label>
+    <input type="text" id="patientId" placeholder="Enter patient ID"><br><br>
+
+    <label for="heartRate">Heart Rate (beats per minute):</label>
+    <input type="number" id="heartRate" placeholder="Enter heart rate"><br><br>
+
+    <label for="date">Date:</label>
+    <input type="date" id="date"><br><br>
+
+    <button onclick="updateObservation()">Submit</button>
+
+    <h2>HTTP response result:</h2>
+    <div id="result"></div>
+
+    <textarea id="TextArea1">          </textarea>
+
+</body>
+<script>
+    document.getElementById("patientId").value = getCookie("patientID");
+</script>
+</html>
